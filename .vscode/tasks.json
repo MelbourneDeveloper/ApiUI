@@ -1,0 +1,31 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "setup-python-backend",
+      "type": "shell",
+      "command": "test -d .venv || (python3 -m venv .venv && .venv/bin/pip install -e '.[dev]')",
+      "options": {
+        "cwd": "${workspaceFolder}/agent"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "setup-flutter-app",
+      "type": "shell",
+      "command": "flutter pub get",
+      "options": {
+        "cwd": "${workspaceFolder}/flutter_app"
+      },
+      "presentation": {
+        "reveal": "silent",
+        "panel": "shared"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

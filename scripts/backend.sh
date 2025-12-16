@@ -1,0 +1,20 @@
+#!/bin/bash
+set -e
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+AGENT_DIR="$SCRIPT_DIR/../agent"
+
+cd "$AGENT_DIR" || exit 1
+
+# Create venv if needed
+if [ ! -d ".venv" ]; then
+  echo "Creating venv..."
+  python3 -m venv .venv
+  .venv/bin/pip install -e ".[dev]"
+fi
+
+# Check .env exists
+[ -f ".env" ] || { echo "Error: $AGENT_DIR/.env not found"; exit 1; }
+
+# Run backend
+exec .venv/bin/python -m uvicorn server:app --reload --host 127.0.0.1 --port 8000
