@@ -2,10 +2,7 @@
 
 Chat with any API. Supply an OpenAPI spec, get a conversational interface with built-in visualization.
 
-```
-You: "Show me all users created this month as a bar chart"
-ApiUI: [calls GET /users, filters, renders chart]
-```
+![ApiUI GitHub Demo](github.gif)
 
 ## What It Does
 
