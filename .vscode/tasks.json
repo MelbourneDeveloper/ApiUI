@@ -2,17 +2,32 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "setup-python-backend",
+      "label": "Backend: GitHub",
       "type": "shell",
-      "command": "test -d .venv || (python3 -m venv .venv && .venv/bin/pip install -e '.[dev]')",
-      "options": {
-        "cwd": "${workspaceFolder}/agent"
-      },
-      "presentation": {
-        "reveal": "silent",
-        "panel": "shared"
-      },
-      "problemMatcher": []
+      "command": "${workspaceFolder}/scripts/backend.sh github",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^Starting backend",
+          "endsPattern": "^Application startup complete"
+        }
+      }
+    },
+    {
+      "label": "Backend: REST Countries",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/backend.sh restcountries",
+      "isBackground": true,
+      "problemMatcher": {
+        "pattern": { "regexp": "^$" },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^Starting backend",
+          "endsPattern": "^Application startup complete"
+        }
+      }
     },
     {
       "label": "setup-flutter-app",

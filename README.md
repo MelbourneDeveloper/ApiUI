@@ -71,12 +71,22 @@ Drop your spec in `agent/specs/` and update `agent/config/agent_config.json`:
 
 ## Architecture
 
-```
-Flutter App ◄──HTTP──► Agent Server ──► Any API
-                            │
-                            ├─ OpenAPI → Tools
-                            ├─ Display Tools (charts, images, files)
-                            └─ Sessions (encrypted, persistent)
+```mermaid
+flowchart LR
+    subgraph Client
+        Flutter[Flutter App]
+    end
+
+    subgraph Server
+        Agent[Agent Server]
+    end
+
+    LLM[LLM Provider]
+    API[Any API]
+
+    Flutter <-->|HTTP| Agent
+    Agent <-->|API| LLM
+    Agent <-->|HTTP| API
 ```
 
 ## Docs

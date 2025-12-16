@@ -22,6 +22,33 @@ detect_ip() {
   echo "$ip"
 }
 
+configure_api() {
+  local api="${1:-github}"
+  cd "$AGENT_DIR" || exit 1
+  case "$api" in
+    github)
+      SPEC="specs/github.yaml"
+      PROMPT="config/system_prompt_github.txt"
+      ;;
+    restcountries)
+      SPEC="specs/restcountries.json"
+      PROMPT="config/system_prompt_restcountries.txt"
+      ;;
+    *)
+      echo "Unknown API: $api (use github or restcountries)"
+      exit 1
+      ;;
+  esac
+  cat > config/agent_config.json << EOF
+{
+  "llm_model": "claude-haiku-4-5",
+  "openapi_spec_path": "$SPEC",
+  "system_prompt_path": "$PROMPT",
+  "tool_mode": "meta"
+}
+EOF
+}
+
 ensure_venv() {
   cd "$AGENT_DIR" || exit 1
   [ -d ".venv" ] && return 0
@@ -31,10 +58,12 @@ ensure_venv() {
 }
 
 start_backend_bg() {
+  local api=$1
   ensure_venv
+  configure_api "$api"
   cd "$AGENT_DIR" || exit 1
   [ -f ".env" ] || { echo "Error: $AGENT_DIR/.env not found"; exit 1; }
-  echo "Starting backend (background)..."
+  echo "Starting backend (background) with $api API..."
   nohup .venv/bin/python -m uvicorn server:app --host 0.0.0.0 --port 8000 > "$LOG_FILE" 2>&1 &
   echo $! > "$PID_FILE"
   echo "Backend PID: $(cat "$PID_FILE")"
@@ -71,15 +100,11 @@ run_tests() {
 }
 
 usage() {
-  echo "Usage: $0 <command>"
+  echo "Usage: $0 <command> [api]"
   echo ""
   echo "Commands:"
-  echo "  app   Run backend + Flutter app together"
-  echo "  test  Run backend + integration tests"
-  echo ""
-  echo "For individual scripts, use:"
-  echo "  ./scripts/backend.sh  - Run backend only"
-  echo "  ./scripts/app.sh      - Run Flutter app only"
+  echo "  app [api]   Run backend + Flutter app (api: github or restcountries, default: github)"
+  echo "  test [api]  Run backend + integration tests"
   exit 1
 }
 
@@ -88,12 +113,12 @@ usage() {
 case "$1" in
   app)
     trap cleanup EXIT INT TERM
-    start_backend_bg
+    start_backend_bg "${2:-github}"
     run_flutter "$(detect_ip)"
     ;;
   test)
     trap cleanup EXIT INT TERM
-    start_backend_bg
+    start_backend_bg "${2:-github}"
     run_tests "$(detect_ip)"
     ;;
   *)

@@ -2,31 +2,23 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "Python: Backend",
-      "type": "debugpy",
+      "name": "Backend: GitHub",
+      "type": "node-terminal",
       "request": "launch",
-      "module": "uvicorn",
-      "args": ["server:app", "--reload", "--host", "127.0.0.1", "--port", "8000"],
-      "cwd": "${workspaceFolder}/agent",
-      "env": {
-        "PYTHONPATH": "${workspaceFolder}/agent"
-      },
-      "console": "integratedTerminal",
-      "preLaunchTask": "setup-python-backend"
+      "command": "${workspaceFolder}/scripts/backend.sh github"
+    },
+    {
+      "name": "Backend: REST Countries",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "${workspaceFolder}/scripts/backend.sh restcountries"
     },
     {
       "name": "Flutter: App",
       "type": "dart",
       "request": "launch",
       "program": "lib/main.dart",
-      "cwd": "${workspaceFolder}/flutter_app",
-      "preLaunchTask": "setup-flutter-app"
-    }
-  ],
-  "compounds": [
-    {
-      "name": "Full Stack",
-      "configurations": ["Python: Backend", "Flutter: App"]
+      "cwd": "${workspaceFolder}/flutter_app"
     }
   ]
 }

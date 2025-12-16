@@ -1,6 +1,6 @@
 {
   "llm_model": "claude-haiku-4-5",
   "openapi_spec_path": "specs/github.yaml",
-  "system_prompt_path": "config/system_prompt.txt",
+  "system_prompt_path": "config/system_prompt_github.txt",
   "tool_mode": "meta"
 }
