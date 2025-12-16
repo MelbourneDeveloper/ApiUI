@@ -1,0 +1,160 @@
+{
+  "openapi": "3.0.0",
+  "info": {
+    "title": "REST Countries API",
+    "version": "3.1",
+    "description": "Get information about countries"
+  },
+  "servers": [
+    {
+      "url": "https://restcountries.com/v3.1"
+    }
+  ],
+  "paths": {
+    "/all": {
+      "get": {
+        "operationId": "get_all_countries",
+        "summary": "Get all countries",
+        "description": "Returns all countries with their information",
+        "parameters": [
+          {
+            "name": "fields",
+            "in": "query",
+            "description": "Comma-separated list of fields to return (e.g., name,capital,population)",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of countries"
+          }
+        }
+      }
+    },
+    "/name/{name}": {
+      "get": {
+        "operationId": "get_country_by_name",
+        "summary": "Search countries by name",
+        "description": "Search for countries by their common or official name",
+        "parameters": [
+          {
+            "name": "name",
+            "in": "path",
+            "required": true,
+            "description": "Country name to search for",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "fullText",
+            "in": "query",
+            "description": "Search by exact country name",
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of matching countries"
+          }
+        }
+      }
+    },
+    "/alpha/{code}": {
+      "get": {
+        "operationId": "get_country_by_code",
+        "summary": "Get country by code",
+        "description": "Get a country by its ISO 3166-1 alpha-2 or alpha-3 code",
+        "parameters": [
+          {
+            "name": "code",
+            "in": "path",
+            "required": true,
+            "description": "ISO 3166-1 alpha-2 or alpha-3 country code",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Country information"
+          }
+        }
+      }
+    },
+    "/currency/{currency}": {
+      "get": {
+        "operationId": "get_countries_by_currency",
+        "summary": "Get countries by currency",
+        "description": "Get countries that use a specific currency",
+        "parameters": [
+          {
+            "name": "currency",
+            "in": "path",
+            "required": true,
+            "description": "Currency code or name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of countries using the currency"
+          }
+        }
+      }
+    },
+    "/region/{region}": {
+      "get": {
+        "operationId": "get_countries_by_region",
+        "summary": "Get countries by region",
+        "description": "Get all countries in a specific region (Africa, Americas, Asia, Europe, Oceania)",
+        "parameters": [
+          {
+            "name": "region",
+            "in": "path",
+            "required": true,
+            "description": "Region name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of countries in the region"
+          }
+        }
+      }
+    },
+    "/capital/{capital}": {
+      "get": {
+        "operationId": "get_country_by_capital",
+        "summary": "Get country by capital",
+        "description": "Search for countries by their capital city",
+        "parameters": [
+          {
+            "name": "capital",
+            "in": "path",
+            "required": true,
+            "description": "Capital city name",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of countries with matching capital"
+          }
+        }
+      }
+    }
+  }
+}

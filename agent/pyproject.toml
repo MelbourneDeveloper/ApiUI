@@ -1,0 +1,62 @@
+[project]
+name = "agent-chat"
+version = "0.1.0"
+description = "Conversational AI agent with dynamic OpenAPI tools"
+requires-python = ">=3.12"
+dependencies = [
+    "langchain==1.1.2",
+    "langchain-anthropic==1.2.0",
+    "langchain-openai==1.1.0",
+    "langgraph==1.0.4",
+    "fastapi>=0.115.0",
+    "uvicorn>=0.32.0",
+    "pydantic>=2.10.0",
+    "httpx>=0.28.0",
+    "result>=0.17.0",
+    "slowapi>=0.1.9",
+    "structlog>=25.5.0",
+    "cryptography>=44.0.0",
+    "tenacity>=9.0.0",
+    "python-dotenv>=1.0.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pyright>=1.1.390",
+    "ruff>=0.8.0",
+    "pytest>=8.3.0",
+    "vulture>=2.11",
+]
+
+[tool.pyright]
+pythonVersion = "3.12"
+typeCheckingMode = "strict"
+reportMissingTypeStubs = false
+reportUnusedFunction = "error"
+
+# Pytest autouse fixtures trigger false positives
+[tool.pyright.analysis]
+exclude = [".vulture_whitelist.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D", "COM812", "ISC001"]
+
+# Unused code MUST be an error
+[tool.ruff.lint.pyflakes]
+extend-generics = []
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]  # Allow assert in tests
+".vulture_whitelist.py" = ["ALL"]  # Vulture whitelist uses special syntax
+
+[tool.hatch.build.targets.wheel]
+packages = ["."]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"

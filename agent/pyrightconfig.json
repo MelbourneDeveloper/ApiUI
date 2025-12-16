@@ -1,0 +1,9 @@
+{
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "strict",
+  "reportMissingTypeStubs": false,
+  "reportUnusedFunction": "error",
+  "venvPath": ".",
+  "venv": ".venv",
+  "exclude": [".venv", "**/__pycache__", "**/node_modules", ".vulture_whitelist.py"]
+}

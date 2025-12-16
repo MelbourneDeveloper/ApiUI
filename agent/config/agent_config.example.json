@@ -1,0 +1,5 @@
+{
+  "llm_model": "claude-haiku-4-5",
+  "openapi_spec_path": "specs/google_calendar.yaml",
+  "system_prompt_path": "config/system_prompt.txt"
+}

@@ -1,0 +1,18 @@
+{
+  "pythonVersion": "3.12",
+  "typeCheckingMode": "strict",
+  "diagnosticMode": "workspace",
+  "reportMissingTypeStubs": false,
+  "venvPath": "./agent",
+  "venv": ".venv",
+  "include": ["agent"],
+  "exclude": [
+    "**/node_modules",
+    "**/__pycache__",
+    "**/site-packages",
+    "**/dist-packages",
+    "**/.venv",
+    "**/venv",
+    "flutter_app"
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "ruff.nativeServer": "on",
+  "ruff.lint.enable": true,
+  "ruff.lint.preview": true,
+  "python.analysis.diagnosticMode": "openFilesOnly",
+  "python.defaultInterpreterPath": "/Users/christianfindlay/Documents/Code/agent_chat/agent/.venv/bin/python",
+  "python.testing.pytestEnabled": true,
+  "python.testing.unittestEnabled": false,
+  "python.testing.cwd": "/Users/christianfindlay/Documents/Code/agent_chat/agent",
+  "python.testing.pytestArgs": [
+    "-s",
+    "-v"
+  ],
+  "python-envs.pythonProjects": [],
+  "python.envFile": "${workspaceFolder}/agent/.env",
+  "python-envs.defaultEnvManager": "ms-python.python:system"
+}
