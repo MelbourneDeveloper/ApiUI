@@ -6,6 +6,7 @@ import 'package:flutter_app/src/logging/logging.dart';
 import 'package:flutter_app/src/message_widget.dart';
 import 'package:flutter_app/src/models.dart';
 import 'package:flutter_app/src/oauth_handler.dart';
+import 'package:flutter_app/src/state/chat_state.dart';
 import 'package:flutter_app/src/theme/responsive.dart';
 import 'package:flutter_app/src/theme/theme_constants.dart';
 import 'package:flutter_app/src/widgets/chat_app_bar.dart';
@@ -13,6 +14,7 @@ import 'package:flutter_app/src/widgets/chat_input_bar.dart';
 import 'package:flutter_app/src/widgets/typing_indicator.dart';
 import 'package:http/http.dart' as http;
 import 'package:nadz/nadz.dart';
+import 'package:reflux/reflux.dart';
 
 /// Main chat screen widget.
 class ChatScreen extends StatefulWidget {
@@ -40,42 +42,43 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final _controller = TextEditingController();
   final _scrollController = ScrollController();
-  final _messages = <ChatMessage>[];
-  String? _sessionId;
-  bool _isLoading = false;
+  late final Store<ChatState> _store;
+  Unsubscribe? _unsubscribe;
 
   @override
   void initState() {
     super.initState();
+    _store = createChatStore();
+    _unsubscribe = _store.subscribe(() => setState(() {}));
     unawaited(_initSession());
   }
 
   @override
   void dispose() {
+    _unsubscribe?.call();
     _controller.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _initSession() async {
-    setState(() => _isLoading = true);
+    _store.dispatch(const StartLoading());
     final result = await createSession(
       logging: widget.logging,
       client: widget.httpClient,
       baseUrl: widget.baseUrl,
     );
-    setState(() {
-      _isLoading = false;
-      _sessionId = switch (result) {
-        Success(value: final s) => s.id,
-        Error() => null,
-      };
-    });
+    switch (result) {
+      case Success(value: final s):
+        _store.dispatch(SessionInitialized(s.id));
+      case Error():
+        _store.dispatch(const SessionFailed());
+    }
   }
 
   Future<void> _sendMessage() async {
     final text = _controller.text.trim();
-    final sessionId = _sessionId;
+    final sessionId = _store.getState().sessionId;
     switch ((text.isNotEmpty, sessionId)) {
       case (true, final String id):
         await _doSend(id, text);
@@ -86,10 +89,9 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Future<void> _doSend(String sessionId, String text) async {
     _controller.clear();
-    setState(() {
-      _messages.add(createChatMessage('human', text));
-      _isLoading = true;
-    });
+    _store
+      ..dispatch(AddMessage(createChatMessage('human', text)))
+      ..dispatch(const StartLoading());
     _scrollToBottom();
 
     final result = await sendMessage(
@@ -100,22 +102,24 @@ class _ChatScreenState extends State<ChatScreen> {
       baseUrl: widget.baseUrl,
     );
 
-    setState(() {
-      _isLoading = false;
-      switch (result) {
-        case Success(value: final response):
-          _messages.add(
+    _store.dispatch(const StopLoading());
+    switch (result) {
+      case Success(value: final response):
+        _store.dispatch(
+          AddMessage(
             createChatMessage(
               'assistant',
               response.response,
               displayItems: response.toolOutputs,
             ),
-          );
-          _handleAuthRequired(response.toolOutputs);
-        case Error(error: final code):
-          _messages.add(createChatMessage('assistant', 'Error: HTTP $code'));
-      }
-    });
+          ),
+        );
+        _handleAuthRequired(response.toolOutputs);
+      case Error(error: final code):
+        _store.dispatch(
+          AddMessage(createChatMessage('assistant', 'Error: HTTP $code')),
+        );
+    }
     _scrollToBottom();
   }
 
@@ -164,6 +168,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   Widget _buildBody(Breakpoint breakpoint) {
     final maxWidth = responsiveMaxWidth(breakpoint);
+    final state = _store.getState();
 
     return Center(
       child: Container(
@@ -172,8 +177,8 @@ class _ChatScreenState extends State<ChatScreen> {
             : null,
         child: Column(
           children: [
-            Expanded(child: _buildMessageList(breakpoint)),
-            _buildLoadingIndicator(breakpoint),
+            Expanded(child: _buildMessageList(breakpoint, state)),
+            _buildLoadingIndicator(breakpoint, state),
             buildChatInputBar(
               controller: _controller,
               onSend: _sendMessage,
@@ -186,31 +191,33 @@ class _ChatScreenState extends State<ChatScreen> {
     );
   }
 
-  Widget _buildMessageList(Breakpoint breakpoint) => switch (_sessionId) {
-    null => const Center(child: CircularProgressIndicator()),
-    _ => ListView.builder(
-      controller: _scrollController,
-      padding: const EdgeInsets.symmetric(vertical: spacingMd),
-      itemCount: _messages.length,
-      itemBuilder: (context, i) => buildMessageWidget(
-        _messages[i],
-        breakpoint: breakpoint,
-        context: context,
-      ),
-    ),
-  };
+  Widget _buildMessageList(Breakpoint breakpoint, ChatState state) =>
+      switch (state.sessionId) {
+        null => const Center(child: CircularProgressIndicator()),
+        _ => ListView.builder(
+          controller: _scrollController,
+          padding: const EdgeInsets.symmetric(vertical: spacingMd),
+          itemCount: state.messages.length,
+          itemBuilder: (context, i) => buildMessageWidget(
+            state.messages[i],
+            breakpoint: breakpoint,
+            context: context,
+          ),
+        ),
+      };
 
-  Widget _buildLoadingIndicator(Breakpoint breakpoint) => switch (_isLoading) {
-    true => Padding(
-      padding: EdgeInsets.symmetric(
-        horizontal: responsivePadding(breakpoint),
-        vertical: spacingSm,
-      ),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: buildTypingIndicator(context),
-      ),
-    ),
-    false => const SizedBox.shrink(),
-  };
+  Widget _buildLoadingIndicator(Breakpoint breakpoint, ChatState state) =>
+      switch (state.isLoading) {
+        true => Padding(
+          padding: EdgeInsets.symmetric(
+            horizontal: responsivePadding(breakpoint),
+            vertical: spacingSm,
+          ),
+          child: Align(
+            alignment: Alignment.centerLeft,
+            child: buildTypingIndicator(context),
+          ),
+        ),
+        false => const SizedBox.shrink(),
+      };
 }

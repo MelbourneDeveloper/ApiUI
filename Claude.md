@@ -11,6 +11,7 @@ Spec: SPEC.md
 - **No literals** - use constants! Especially, URLs and model names. DO NOT DUPLICATE
 - **No duplication** - search before adding, move instead of copy (HIGHEST PRIORITY)
 - **No global state**
+- **No late, casting (as), or ! bang operator** - use pattern matching
 - **Default model is claude-haiku-4-5** - the only way to override this is with config
 - **No mocks** - avoid unless absolutely necessary
 - **No consecutive logs/prints** - use string interpolation

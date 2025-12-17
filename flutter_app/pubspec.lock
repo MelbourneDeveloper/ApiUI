@@ -65,6 +65,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.8"
+  dart_logging:
+    dependency: transitive
+    description:
+      name: dart_logging
+      sha256: f739484bf56eb79155bc593c2e0042e0e81e0e49eb33f0368a73c032acc25042
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.11.0-beta"
   dio:
     dependency: transitive
     description:
@@ -351,6 +359,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "5.0.5"
+  reflux:
+    dependency: "direct main"
+    description:
+      name: reflux
+      sha256: "77bba46514151c6c35eed1b062af62ca8bd6c75991938a3ce081e10cda219cf5"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.11.0-beta"
   sky_engine:
     dependency: transitive
     description: flutter

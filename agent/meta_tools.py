@@ -10,7 +10,11 @@ from pydantic import BaseModel, Field, create_model
 from result import Err, Ok, Result
 
 from _langchain_types import ToolProtocol, create_structured_tool
-from openapi_tools import _execute_http_request  # pyright: ignore[reportPrivateUsage]
+from openapi_tools import (
+    _execute_http_request,  # pyright: ignore[reportPrivateUsage]
+    _extract_base_url,  # pyright: ignore[reportPrivateUsage]
+    _sanitize_tool_name,  # pyright: ignore[reportPrivateUsage]
+)
 
 if TYPE_CHECKING:
     from collections.abc import Mapping, Sequence
@@ -48,9 +52,11 @@ def _extract_params(parameters: list[dict[str, Any]]) -> tuple[ParamSpec, ...]:
     )
 
 
-def _sanitize_tool_name(name: str) -> str:
-    """Sanitize name to match pattern ^[a-zA-Z0-9_-]{1,128}$."""
-    return name.replace(" ", "_").replace("/", "_")[:128]
+def _generate_operation_id(method: str, path: str) -> str:
+    """Generate an operation ID from method and path."""
+    # /annotations/{id} -> annotations_id
+    path_part = path.strip("/").replace("/", "_").replace("{", "").replace("}", "")
+    return f"{method}_{path_part}"
 
 
 def extract_groups_from_tags(spec: dict[str, Any]) -> dict[str, list[str]]:
@@ -58,14 +64,16 @@ def extract_groups_from_tags(spec: dict[str, Any]) -> dict[str, list[str]]:
     groups: dict[str, list[str]] = {}
     paths = spec.get("paths", {})
 
-    for path_item in paths.values():
+    for path, path_item in paths.items():
         for method in ("get", "post", "put", "patch", "delete"):
             operation = path_item.get(method)
             match operation:
                 case None:
                     continue
                 case op:
-                    op_id = op.get("operationId", "")
+                    op_id = op.get("operationId") or _generate_operation_id(
+                        method, path
+                    )
                     tags = op.get("tags", [])
                     tag = _sanitize_tool_name(tags[0]) if tags else "default"
                     groups.setdefault(tag, []).append(op_id)
@@ -86,18 +94,25 @@ def extract_operation(
             match operation:
                 case None:
                     continue
-                case op if op.get("operationId") == operation_id:
-                    return Ok(
-                        OperationSpec(
-                            operation_id=operation_id,
-                            method=method,
-                            path=path,
-                            summary=op.get("summary", op.get("description", "")),
-                            params=_extract_params(op.get("parameters", [])),
-                        )
+                case op:
+                    actual_id = op.get("operationId") or _generate_operation_id(
+                        method, path
                     )
-                case _:
-                    continue
+                    match actual_id == operation_id:
+                        case True:
+                            return Ok(
+                                OperationSpec(
+                                    operation_id=operation_id,
+                                    method=method,
+                                    path=path,
+                                    summary=op.get(
+                                        "summary", op.get("description", "")
+                                    ),
+                                    params=_extract_params(op.get("parameters", [])),
+                                )
+                            )
+                        case _:
+                            continue
 
     return Err(f"Operation not found: {operation_id}")
 
@@ -234,8 +249,7 @@ def generate_meta_tools(
 ) -> Result[list[ToolProtocol], str]:
     """Generate meta tools from groups config or spec tags."""
     effective_groups = groups if groups else extract_groups_from_tags(spec)
-    servers = spec.get("servers", [])
-    base_url = servers[0]["url"] if servers else ""
+    base_url = _extract_base_url(spec)
 
     tools: list[ToolProtocol] = []
     for tool_name, op_ids in effective_groups.items():

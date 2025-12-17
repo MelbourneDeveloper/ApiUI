@@ -5,13 +5,19 @@
       "name": "Backend: GitHub",
       "type": "node-terminal",
       "request": "launch",
-      "command": "${workspaceFolder}/scripts/backend.sh github"
+      "command": "${workspaceFolder}/scripts/backend.sh config/github.json"
     },
     {
       "name": "Backend: REST Countries",
       "type": "node-terminal",
       "request": "launch",
-      "command": "${workspaceFolder}/scripts/backend.sh restcountries"
+      "command": "${workspaceFolder}/scripts/backend.sh config/restcountries.json"
+    },
+    {
+      "name": "Backend: iNaturalist",
+      "type": "node-terminal",
+      "request": "launch",
+      "command": "${workspaceFolder}/scripts/backend.sh config/inaturalist.json"
     },
     {
       "name": "Flutter: App",

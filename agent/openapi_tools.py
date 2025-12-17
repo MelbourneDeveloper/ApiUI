@@ -139,13 +139,34 @@ def _create_api_tool(
     )
 
 
+def _extract_base_url(spec: dict[str, Any]) -> str:
+    """Extract base URL from OpenAPI 3.x or Swagger 2.0 spec."""
+    # OpenAPI 3.x: servers array
+    servers = spec.get("servers", [])
+    match servers:
+        case [first, *_]:
+            return first.get("url", "")
+        case _:
+            pass
+
+    # Swagger 2.0: host + schemes + basePath
+    host = spec.get("host", "")
+    match host:
+        case "":
+            return ""
+        case _:
+            schemes = spec.get("schemes", ["https"])
+            scheme = "https" if "https" in schemes else schemes[0]
+            base_path = spec.get("basePath", "")
+            return f"{scheme}://{host}{base_path}"
+
+
 def generate_tools_from_spec(
     spec: dict[str, Any],
     auth_token: str | None = None,
 ) -> list[ToolProtocol]:
     """Generate LangChain tools from an OpenAPI spec."""
-    servers = spec.get("servers", [])
-    base_url = servers[0]["url"] if servers else ""
+    base_url = _extract_base_url(spec)
     paths = spec.get("paths", {})
 
     tools: list[ToolProtocol] = []
